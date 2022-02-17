@@ -15,7 +15,7 @@ class RajaOngkirCubit extends Cubit<RajaOngkirState> {
   void getProvinceData() async {
     emit(const RajaOngkirState.loading());
     try {
-      final _result = await rajaOngkir.getCityData();
+      final _result = await rajaOngkir.getProvinceData();
 
       _result.fold(
         (l) => emit(RajaOngkirState.error(l)),
