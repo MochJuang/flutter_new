@@ -1,3 +1,4 @@
+import 'package:app1/domain/raja_ongkir/city/city_data_model.dart';
 import 'package:app1/domain/raja_ongkir/province/province_data_model.dart';
 import 'package:app1/domain/raja_ongkir/raja_ongkir_fail.dart';
 import 'package:app1/domain/raja_ongkir/raja_ongkir_repository.dart';
@@ -20,6 +21,21 @@ class RajaOngkirCubit extends Cubit<RajaOngkirState> {
       _result.fold(
         (l) => emit(RajaOngkirState.error(l)),
         (r) => emit(RajaOngkirState.onGetProviceData(r)),
+      );
+    } catch (e) {
+      emit(RajaOngkirState.error(
+          RajaOngkirFail().copyWith(description: e.toString())));
+    }
+  }
+
+  void getCityData(String provinceId) async {
+    emit(const RajaOngkirState.loading());
+    try {
+      final _result = await rajaOngkir.getCityData(provinceId);
+
+      _result.fold(
+        (l) => emit(RajaOngkirState.error(l)),
+        (r) => emit(RajaOngkirState.onGetCityData(r)),
       );
     } catch (e) {
       emit(RajaOngkirState.error(

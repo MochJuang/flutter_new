@@ -9,6 +9,7 @@ class AppWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return GetMaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       getPages: Routes.getPages,
       theme: ThemeData(
         primarySwatch: Colors.blue,
