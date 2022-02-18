@@ -9,4 +9,6 @@ class RajaOngkirState with _$RajaOngkirState {
       List<ProvinceDataModel> dataModel) = _onGetProviceData;
   const factory RajaOngkirState.onGetCityData(List<CityDataModel> dataModel) =
       _onGetCityData;
+  const factory RajaOngkirState.onGetCostData(ResponseCostModel dataModel) =
+      _onGetCostData;
 }

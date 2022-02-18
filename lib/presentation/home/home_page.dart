@@ -1,7 +1,10 @@
+import 'package:app1/application/raja_ongkir/raja_ongkir_controller.dart';
 import 'package:app1/application/raja_ongkir/raja_ongkir_cubit.dart';
 import 'package:app1/domain/raja_ongkir/city/city_data_model.dart';
+import 'package:app1/domain/raja_ongkir/cost/request_cost_model.dart';
 import 'package:app1/domain/raja_ongkir/province/province_data_model.dart';
 import 'package:app1/injection.dart';
+import 'package:app1/presentation/result/result_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
@@ -19,7 +22,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final provinceCubit = getIt<RajaOngkirCubit>();
   final cityCubit = getIt<RajaOngkirCubit>();
-  TextEditingController widgetController = new TextEditingController();
+  final costCubit = getIt<RajaOngkirCubit>();
+  final rajaOngkirController = Get.put(RajaOngkirController());
+  TextEditingController weightController = new TextEditingController();
+  late CityDataModel selectedCity;
+  late ProvinceDataModel selectedProvince;
 
   final formKey = GlobalKey<FormState>();
   @override
@@ -42,9 +49,7 @@ class _HomePageState extends State<HomePage> {
               snackPosition: SnackPosition.BOTTOM,
               duration: Duration(seconds: 2)));
         },
-        onGetProviceData: (e) {
-          print(e.dataModel.toString());
-        });
+        onGetProviceData: (e) {});
   }
 
   cubitListenerCity(BuildContext context, RajaOngkirState state) {
@@ -61,9 +66,7 @@ class _HomePageState extends State<HomePage> {
               snackPosition: SnackPosition.BOTTOM,
               duration: Duration(seconds: 2)));
         },
-        onGetCityData: (e) {
-          print(e.dataModel.toString());
-        });
+        onGetCityData: (e) {});
   }
 
   @override
@@ -72,128 +75,177 @@ class _HomePageState extends State<HomePage> {
         appBar: AppBar(
           title: const Text("Raja Ongkir API"),
         ),
-        body: Column(children: [
-          BlocProvider(
-            create: (context) => getIt<RajaOngkirCubit>()..getProvinceData(),
-            child: BlocConsumer<RajaOngkirCubit, RajaOngkirState>(
-              listener: cubitListenerProvince,
-              builder: (context, state) {
-                return state.maybeMap(
-                  orElse: () => Container(
-                    padding: EdgeInsets.all(10),
-                    child: Container(
-                      padding: EdgeInsets.all(10),
-                      child: DropdownButtonFormField<ProvinceDataModel>(
-                        onChanged: (e) {
-                          print(e);
-                        },
-                        items: [],
-                        decoration: const InputDecoration(
-                          hintText: "Province",
-                          border: OutlineInputBorder(),
-                        ),
-                      ),
-                    ),
-                  ),
+        body: BlocProvider(
+          create: (context) => costCubit,
+          child: BlocConsumer<RajaOngkirCubit, RajaOngkirState>(
+            listener: (context, state) {
+              state.maybeMap(
+                  orElse: () {},
                   loading: (e) {
-                    return Container(
-                      padding: EdgeInsets.all(10),
-                      child: DropdownButtonFormField<ProvinceDataModel>(
-                        onChanged: (e) {
-                          print(e);
-                        },
-                        items: [],
-                        decoration: const InputDecoration(
-                            hintText: "Province",
-                            border: OutlineInputBorder(),
-                            suffixIcon: CircularProgressIndicator()),
-                      ),
-                    );
+                    print("Loading Data Cost");
                   },
-                  error: (e) {
-                    return OnErrorView(description: e.fail.description);
-                  },
-                  onGetProviceData: (e) => OnSuccessViewProvince(
-                    listProvince: e.dataModel,
-                    cubit: cityCubit,
-                  ),
-                );
-              },
-            ),
-          ),
-          BlocProvider(
-            create: (context) => cityCubit,
-            child: BlocConsumer<RajaOngkirCubit, RajaOngkirState>(
-              listener: cubitListenerCity,
-              builder: (context, state) {
-                return state.maybeMap(
-                    orElse: () => Container(
+                  error: (e) {},
+                  onGetCostData: (e) {
+                    print(e.dataModel);
+                    Get.toNamed(ResultPage.TAG, arguments: e.dataModel);
+                  });
+            },
+            builder: (context, state) {
+              return Column(children: [
+                BlocProvider(
+                  create: (context) =>
+                      getIt<RajaOngkirCubit>()..getProvinceData(),
+                  child: BlocConsumer<RajaOngkirCubit, RajaOngkirState>(
+                    listener: cubitListenerProvince,
+                    builder: (context, state) {
+                      return state.maybeMap(
+                        orElse: () => Container(
                           padding: EdgeInsets.all(10),
-                          child: DropdownButtonFormField<CityDataModel>(
-                            onChanged: (e) {
-                              print(e);
-                            },
-                            items: [],
-                            decoration: const InputDecoration(
-                              hintText: "City",
-                              border: OutlineInputBorder(),
+                          child: Container(
+                            padding: EdgeInsets.all(10),
+                            child: DropdownButtonFormField<ProvinceDataModel>(
+                              onChanged: (e) {
+                                print(e);
+                              },
+                              items: [],
+                              decoration: const InputDecoration(
+                                hintText: "Getting Province",
+                                border: OutlineInputBorder(),
+                              ),
                             ),
                           ),
                         ),
-                    loading: (e) {
-                      return DropdownButtonFormField<CityDataModel>(
-                        onChanged: (e) {
-                          print(e);
+                        loading: (e) {
+                          return Container(
+                            margin: EdgeInsets.all(10),
+                            child: DropdownButtonFormField<ProvinceDataModel>(
+                              onChanged: (e) {
+                                print(e);
+                              },
+                              items: [],
+                              decoration: const InputDecoration(
+                                  hintText: "Getting Data Province ..",
+                                  border: OutlineInputBorder(),
+                                  suffixIcon: CircularProgressIndicator()),
+                            ),
+                          );
                         },
-                        items: [],
-                        decoration: const InputDecoration(
-                            hintText: "City",
-                            border: OutlineInputBorder(),
-                            suffixIcon: CircularProgressIndicator()),
+                        error: (e) {
+                          return OnErrorView(description: e.fail.description);
+                        },
+                        onGetProviceData: (e) => OnSuccessViewProvince(
+                          listProvince: e.dataModel,
+                          cubit: cityCubit,
+                        ),
                       );
                     },
-                    error: (e) {
-                      return OnErrorView(description: e.fail.description);
+                  ),
+                ),
+                BlocProvider(
+                  create: (context) => cityCubit,
+                  child: BlocConsumer<RajaOngkirCubit, RajaOngkirState>(
+                    listener: cubitListenerCity,
+                    builder: (context, state) {
+                      return state.maybeMap(
+                          orElse: () => Container(
+                                padding: EdgeInsets.all(10),
+                                child: DropdownButtonFormField<CityDataModel>(
+                                  onChanged: (e) {
+                                    print(e);
+                                  },
+                                  items: [],
+                                  decoration: const InputDecoration(
+                                    hintText: "City",
+                                    border: OutlineInputBorder(),
+                                  ),
+                                ),
+                              ),
+                          loading: (e) {
+                            return Container(
+                              padding: EdgeInsets.all(10),
+                              child: DropdownButtonFormField<CityDataModel>(
+                                onChanged: (e) {
+                                  print(e);
+                                },
+                                items: [],
+                                decoration: const InputDecoration(
+                                    hintText: "Getting Data City ...",
+                                    border: OutlineInputBorder(),
+                                    suffixIcon: CircularProgressIndicator()),
+                              ),
+                            );
+                          },
+                          error: (e) {
+                            return OnErrorView(description: e.fail.description);
+                          },
+                          onGetCityData: (e) =>
+                              OnSuccessViewCity(listCity: e.dataModel));
                     },
-                    onGetCityData: (e) =>
-                        OnSuccessViewCity(listCity: e.dataModel));
-              },
-            ),
-          ),
-          Container(
-            padding: EdgeInsets.all(10),
-            child: Column(
-              children: [
-                Form(
-                  key: formKey,
-                  autovalidateMode: AutovalidateMode.onUserInteraction,
-                  child: TextFormField(
-                    controller: widgetController,
-                    keyboardType: TextInputType.number,
-                    validator: (val) {
-                      if (val.toString().isEmpty) {
-                        return "Field cannot be empty";
-                      }
-                      if (!val.toString().isNum) {
-                        return "Field must be number";
-                      }
-                    },
-                    decoration: const InputDecoration(
-                      hintText: "Weight",
-                      border: OutlineInputBorder(),
-                    ),
                   ),
                 ),
                 Container(
-                    margin: EdgeInsets.only(top: 20),
-                    width: double.infinity,
-                    height: 50,
-                    child: ElevatedButton(
-                        onPressed: () {}, child: Text("Get Ongkir")))
-              ],
-            ),
-          )
-        ]));
+                  padding: EdgeInsets.all(10),
+                  child: Column(
+                    children: [
+                      Form(
+                        key: formKey,
+                        autovalidateMode: AutovalidateMode.onUserInteraction,
+                        child: TextFormField(
+                          controller: weightController,
+                          keyboardType: TextInputType.number,
+                          validator: (val) {
+                            if (val.toString().isEmpty) {
+                              return "Field cannot be empty";
+                            }
+                            if (!val.toString().isNum) {
+                              return "Field must be number";
+                            }
+                          },
+                          decoration: const InputDecoration(
+                            hintText: "Weight",
+                            border: OutlineInputBorder(),
+                          ),
+                        ),
+                      ),
+                      state.maybeMap(
+                        orElse: () => defaultButton(),
+                        loading: (e) => loadingButton(),
+                      ),
+                    ],
+                  ),
+                )
+              ]);
+            },
+          ),
+        ));
+  }
+
+  Container defaultButton() {
+    return Container(
+        margin: const EdgeInsets.only(top: 20),
+        width: double.infinity,
+        height: 50,
+        child: ElevatedButton(
+            onPressed: () {
+              final roCon = Get.put(RajaOngkirController());
+              costCubit.getCostData(RequestCostModel(
+                origin: 1,
+                destination: int.parse(roCon.getCityDataModel().cityId),
+                weight: int.parse(weightController.text),
+                courier: 'jne,pos,tiki',
+              ));
+            },
+            child: Text("Get Ongkir")));
+  }
+
+  Container loadingButton() {
+    return Container(
+        margin: EdgeInsets.only(top: 20),
+        width: double.infinity,
+        height: 50,
+        child: const ElevatedButton(
+            onPressed: null,
+            child: Center(child: CircularProgressIndicator())));
   }
 }
 
@@ -229,17 +281,19 @@ class OnSuccessViewProvince extends StatelessWidget {
 class OnSuccessViewCity extends StatelessWidget {
   OnSuccessViewCity({Key? key, required this.listCity}) : super(key: key);
   List<CityDataModel> listCity;
+
+  final roController = Get.put(RajaOngkirController());
   @override
   Widget build(BuildContext context) {
     return Container(
         padding: const EdgeInsets.all(10),
         child: DropdownButtonFormField<CityDataModel>(
           onChanged: (e) {
-            print(e);
+            roController.setCityDataModel(e!);
           },
           items: listCity
               .map((e) => DropdownMenuItem(
-                    child: Text(e.cityName),
+                    child: Text(e.type + " " + e.cityName),
                     value: e,
                   ))
               .toList(),
